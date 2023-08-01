@@ -1,11 +1,13 @@
-import type { Types, GameObjects } from "phaser";
+import { type Types, type Scene, Utils, type Input } from "phaser";
 import { Card } from "./Card";
 
 interface CardsGridProps {
   rows: number;
   cols: number;
   gameConfig: Types.Core.GameConfig;
-  spriteToShow: () => GameObjects.Sprite;
+  cardBackPreloadKey: string;
+  cardFacePreloadKeys: string[];
+  scene: Scene;
 }
 
 class CardsGrid {
@@ -13,13 +15,23 @@ class CardsGrid {
   private _cardHeight: number;
   private _gap = 4;
 
-  constructor({ rows, cols, gameConfig, spriteToShow }: CardsGridProps) {
-    const sprite = spriteToShow();
+  constructor({
+    rows,
+    cols,
+    gameConfig,
+    cardBackPreloadKey,
+    cardFacePreloadKeys,
+    scene,
+  }: CardsGridProps) {
+    const backFaceSprite = scene.add.sprite(0, 0, cardBackPreloadKey);
 
-    this._cardWidth = sprite.width;
-    this._cardHeight = sprite.height;
+    this._cardWidth = backFaceSprite.width;
+    this._cardHeight = backFaceSprite.height;
 
-    sprite.destroy();
+    backFaceSprite.destroy();
+
+    const cardFaces = cardFacePreloadKeys.concat(cardFacePreloadKeys);
+    Utils.Array.Shuffle(cardFaces);
 
     const offsetX = (Number(gameConfig.width) - this._cardWidth * cols) / 2;
     const offsetY = (Number(gameConfig.height) - this._cardHeight * rows) / 2;
@@ -29,7 +41,8 @@ class CardsGrid {
         const card = new Card({
           positionX: offsetX + col * (this._cardWidth + this._gap),
           positionY: offsetY + row * (this._cardHeight + this._gap),
-          spriteToShow,
+          backFaceSprite: scene.add.sprite(0, 0, cardBackPreloadKey),
+          frontFaceSprite: scene.add.sprite(0, 0, cardFaces.pop()),
         });
       }
     }
