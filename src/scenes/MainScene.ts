@@ -9,6 +9,9 @@ class MainScene extends Scene {
   private _backgroundName = "bg";
   private _cardName = "card";
   private _config: Types.Core.GameConfig;
+  private _rows = 2;
+  private _cols = 5;
+  private _cardFaceKeys: string[] = [];
 
   constructor(config: Types.Core.GameConfig) {
     super(config);
@@ -19,18 +22,26 @@ class MainScene extends Scene {
   preload() {
     this.load.image(this._backgroundName, this._backgroundURL);
     this.load.image(this._cardName, this._cardURL);
+
+    for (let i = 1; i <= this._cols; i++) {
+      const cardKey = `${this._cardName}-${i}`;
+
+      this._cardFaceKeys.push(cardKey);
+
+      this.load.image(cardKey, `${this._assetsURL}/card${i}.png`);
+    }
   }
 
   create() {
     this.add.sprite(0, 0, this._backgroundName).setOrigin(0, 0);
 
     const cardsGrid = new CardsGrid({
-      rows: 2,
-      cols: 5,
+      rows: this._rows,
+      cols: this._cols,
       gameConfig: this._config,
-      spriteToShow: () => {
-        return this.add.sprite(0, 0, this._cardName).setOrigin(0, 0);
-      },
+      cardBackPreloadKey: this._cardName,
+      cardFacePreloadKeys: this._cardFaceKeys,
+      scene: this,
     });
   }
 }
