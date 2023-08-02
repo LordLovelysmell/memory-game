@@ -18,7 +18,7 @@ class Card {
   private _callbacks: (() => void)[] = [];
   private _scene: Scene;
 
-  private _isOpened: boolean;
+  private _cardCurrentSide: GameObjects.Sprite;
 
   constructor({
     id,
@@ -31,12 +31,12 @@ class Card {
   }: CardProps) {
     this._id = id;
     this._value = value;
-    this._isOpened = false;
 
     this._scene = scene;
 
     this._cardBackFace = backFaceSprite;
     this._cardFrontFace = frontFaceSprite;
+    this._cardCurrentSide = this._cardBackFace;
 
     this._cardBackFace.setX(positionX);
     this._cardBackFace.setY(positionY);
@@ -44,18 +44,18 @@ class Card {
     this._cardFrontFace.setX(positionX);
     this._cardFrontFace.setY(positionY);
 
-    this._cardFrontFace.scaleX = 0;
+    this._cardFrontFace.setVisible(false);
 
-    this._cardBackFace.setInteractive();
+    this._cardCurrentSide.setInteractive();
 
-    this._cardBackFace.on("pointerdown", this._pointerDownHandler, this);
+    this._cardCurrentSide.on("pointerdown", this._pointerDownHandler, this);
   }
 
   public set setInteractive(value: boolean) {
     if (value) {
-      this._cardBackFace.setInteractive();
+      this._cardCurrentSide.setInteractive();
     } else {
-      this._cardBackFace.disableInteractive();
+      this._cardCurrentSide.disableInteractive();
     }
   }
 
@@ -77,24 +77,24 @@ class Card {
 
   private _pointerDownHandler() {
     this._flip(() => {
-      this._isOpened = true;
-
-      this._callbacks.forEach((cb) => cb());
+      this._cardCurrentSide.setTexture(this._value);
     });
+
+    this._callbacks.forEach((cb) => cb());
   }
 
   private _flip(onComplete: () => void) {
     this._scene.tweens.add({
-      targets: this._isOpened ? this._cardFrontFace : this._cardBackFace,
-      scaleX: this._isOpened ? 1 : 0,
+      targets: this._cardCurrentSide,
+      scaleX: 0,
       ease: "Linear",
       duration: 150,
       onComplete: () => {
         onComplete();
 
         this._scene.tweens.add({
-          targets: this._isOpened ? this._cardFrontFace : this._cardBackFace,
-          scaleX: this._isOpened ? 1 : 0,
+          targets: this._cardCurrentSide,
+          scaleX: 1,
           ease: "Linear",
           duration: 150,
         });
@@ -103,21 +103,8 @@ class Card {
   }
 
   public close() {
-    this._isOpened = false;
-
-    this._scene.tweens.add({
-      targets: this._cardFrontFace,
-      scaleX: 0,
-      ease: "Linear",
-      duration: 150,
-      onComplete: () => {
-        this._scene.tweens.add({
-          targets: this._cardBackFace,
-          scaleX: 1,
-          ease: "Linear",
-          duration: 150,
-        });
-      },
+    this._flip(() => {
+      this._cardCurrentSide.setTexture("card");
     });
   }
 
