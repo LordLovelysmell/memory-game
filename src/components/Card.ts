@@ -18,6 +18,8 @@ class Card {
   private _callbacks: any[] = [];
   private _scene: Scene;
 
+  private _isOpened: boolean;
+
   constructor({
     id,
     value,
@@ -29,6 +31,7 @@ class Card {
   }: CardProps) {
     this._id = id;
     this._value = value;
+    this._isOpened = false;
 
     this._scene = scene;
 
@@ -41,7 +44,7 @@ class Card {
     this._cardFrontFace.setX(positionX);
     this._cardFrontFace.setY(positionY);
 
-    this._cardFrontFace.setVisible(false);
+    this._cardFrontFace.scaleX = 0;
 
     this._cardBackFace.setInteractive();
 
@@ -73,13 +76,49 @@ class Card {
   }
 
   private _pointerDownHandler() {
-    this._cardFrontFace.setVisible(true);
+    this._flip(() => {
+      this._isOpened = true;
 
-    this._callbacks.forEach((cb) => cb());
+      this._callbacks.forEach((cb) => cb());
+    });
+  }
+
+  private _flip(onComplete: () => any) {
+    this._scene.tweens.add({
+      targets: this._isOpened ? this._cardFrontFace : this._cardBackFace,
+      scaleX: this._isOpened ? 1 : 0,
+      ease: "Linear",
+      duration: 150,
+      onComplete: () => {
+        onComplete();
+
+        this._scene.tweens.add({
+          targets: this._isOpened ? this._cardFrontFace : this._cardBackFace,
+          scaleX: this._isOpened ? 1 : 0,
+          ease: "Linear",
+          duration: 150,
+        });
+      },
+    });
   }
 
   public close() {
-    this._cardFrontFace.setVisible(false);
+    this._isOpened = false;
+
+    this._scene.tweens.add({
+      targets: this._cardFrontFace,
+      scaleX: 0,
+      ease: "Linear",
+      duration: 150,
+      onComplete: () => {
+        this._scene.tweens.add({
+          targets: this._cardBackFace,
+          scaleX: 1,
+          ease: "Linear",
+          duration: 150,
+        });
+      },
+    });
   }
 
   public onClick(cb: () => any) {
