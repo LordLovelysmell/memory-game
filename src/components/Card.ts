@@ -15,7 +15,7 @@ class Card {
   private _value: string;
   private _cardFrontFace: GameObjects.Sprite;
   private _cardBackFace: GameObjects.Sprite;
-  private _callbacks: any[] = [];
+  private _callbacks: (() => void)[] = [];
   private _scene: Scene;
 
   private _isOpened: boolean;
@@ -83,7 +83,7 @@ class Card {
     });
   }
 
-  private _flip(onComplete: () => any) {
+  private _flip(onComplete: () => void) {
     this._scene.tweens.add({
       targets: this._isOpened ? this._cardFrontFace : this._cardBackFace,
       scaleX: this._isOpened ? 1 : 0,
@@ -121,7 +121,7 @@ class Card {
     });
   }
 
-  public onClick(cb: () => any) {
+  public onClick(cb: () => void) {
     this._callbacks.push(cb);
   }
 }

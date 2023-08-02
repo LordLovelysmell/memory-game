@@ -17,6 +17,8 @@ class MainScene extends Scene {
     super(config);
 
     this._config = config;
+
+    this._preloadFonts();
   }
 
   preload() {
@@ -35,6 +37,26 @@ class MainScene extends Scene {
   create() {
     this.add.sprite(0, 0, this._backgroundName).setOrigin(0, 0);
 
+    const totalTime = this._rows * this._cols * 0.5;
+    let timeRemaining = totalTime;
+
+    const timeoutText = this.add.text(10, 330, "", {
+      fontFamily: "JingleStar",
+      fontSize: "28px",
+    });
+
+    this.time.addEvent({
+      delay: 1000,
+      callback: () => {
+        timeoutText.setText(`Time: ${timeRemaining--}`);
+
+        if (timeRemaining <= 0) {
+          timeRemaining = totalTime;
+        }
+      },
+      loop: true,
+    });
+
     const cardsGrid = new CardsGrid({
       rows: this._rows,
       cols: this._cols,
@@ -43,6 +65,15 @@ class MainScene extends Scene {
       cardFacePreloadKeys: this._cardFaceKeys,
       scene: this,
     });
+  }
+
+  private _preloadFonts() {
+    const div = document.createElement("div");
+    div.innerText = ".";
+    div.style.fontFamily = "JingleStar";
+    div.style.position = "absolute";
+    div.style.visibility = "hidden";
+    document.body.insertAdjacentElement("afterbegin", div);
   }
 }
 
