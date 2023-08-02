@@ -18,6 +18,7 @@ class Card {
   private _callbacks: (() => void)[] = [];
   private _scene: Scene;
 
+  private _isOpened: boolean;
   private _cardCurrentSide: GameObjects.Sprite;
 
   constructor({
@@ -31,6 +32,7 @@ class Card {
   }: CardProps) {
     this._id = id;
     this._value = value;
+    this._isOpened = false;
 
     this._scene = scene;
 
@@ -63,10 +65,6 @@ class Card {
     this._value = value;
   }
 
-  public get cardFrontFace() {
-    return this._cardFrontFace;
-  }
-
   public get id() {
     return this._id;
   }
@@ -75,10 +73,20 @@ class Card {
     return this._value;
   }
 
+  public get isOpen() {
+    return this._isOpened;
+  }
+
   private _pointerDownHandler() {
+    if (this._isOpened) {
+      return;
+    }
+
     this._flip(() => {
       this._cardCurrentSide.setTexture(this._value);
     });
+
+    this._isOpened = true;
 
     this._callbacks.forEach((cb) => cb());
   }
@@ -88,7 +96,7 @@ class Card {
       targets: this._cardCurrentSide,
       scaleX: 0,
       ease: "Linear",
-      duration: 150,
+      duration: 200,
       onComplete: () => {
         onComplete();
 
@@ -96,13 +104,15 @@ class Card {
           targets: this._cardCurrentSide,
           scaleX: 1,
           ease: "Linear",
-          duration: 150,
+          duration: 200,
         });
       },
     });
   }
 
   public close() {
+    this._isOpened = false;
+
     this._flip(() => {
       this._cardCurrentSide.setTexture("card");
     });

@@ -7,6 +7,9 @@ interface CardsGridProps {
   gameConfig: Types.Core.GameConfig;
   cardBackPreloadKey: string;
   cardFacePreloadKeys: string[];
+  onAllPairsFound?: () => void;
+  onOnePairFound?: () => void;
+  onCardClick?: () => void;
   scene: Scene;
 }
 
@@ -16,6 +19,9 @@ class CardsGrid {
   private _gameConfig: Types.Core.GameConfig;
   private _cardBackPreloadKey: string;
   private _cardFaces: string[];
+  private _onAllPairsFound: () => void;
+  private _onOnePairFound: () => void;
+  private _onCardClick: () => void;
   private _scene: Scene;
 
   private _cardWidth: number;
@@ -35,6 +41,9 @@ class CardsGrid {
     gameConfig,
     cardBackPreloadKey,
     cardFacePreloadKeys,
+    onAllPairsFound,
+    onOnePairFound,
+    onCardClick,
     scene,
   }: CardsGridProps) {
     this._rows = rows;
@@ -61,6 +70,10 @@ class CardsGrid {
     this._cardFaces = this._getShuffledCards(this._cardFaces);
 
     this._createGrid();
+
+    this._onAllPairsFound = onAllPairsFound;
+    this._onOnePairFound = onOnePairFound;
+    this._onCardClick = onCardClick;
   }
 
   private _getShuffledCards(cardFacePreloadKeys: string[]) {
@@ -106,6 +119,10 @@ class CardsGrid {
         return;
       }
 
+      if (this._onCardClick) {
+        this._onCardClick();
+      }
+
       if (this._prevCard && this._prevCardValue === card.value) {
         // pair was found
         this._openedCardsCount += 2;
@@ -113,6 +130,10 @@ class CardsGrid {
         card.setInteractive = false;
         this._prevCard = null;
         this._prevCardValue = null;
+
+        if (this._onOnePairFound) {
+          this._onOnePairFound();
+        }
       } else if (this._prevCard) {
         // not a pair card was clicked
         this._prevCard.close();
@@ -126,26 +147,32 @@ class CardsGrid {
 
       // if all pairs were found
       if (this._openedCardsCount === this._rows * this._cols) {
+        if (this._onAllPairsFound) {
+          this._onAllPairsFound();
+        }
         this._rebuildGrid();
-
-        this._openedCardsCount = 0;
       }
     };
   }
 
-  private _rebuildGrid() {
+  public _rebuildGrid() {
     this._cardFaces = this._getShuffledCards(this._cardFaces);
     const cardFacesCopy = this._cardFaces.map((card) => card);
 
+    this._prevCard = null;
+    this._prevCardValue = null;
+
     this._cards.forEach((card) => {
       card.setInteractive = true;
-      card.close();
+      if (card.isOpen) {
+        card.close();
+      }
 
       const lastCard = cardFacesCopy.pop();
-
       card.value = lastCard;
-      card.cardFrontFace.setTexture(lastCard);
     });
+
+    this._openedCardsCount = 0;
   }
 }
 
