@@ -113,7 +113,7 @@ class CardsGrid {
       }
     }
 
-    this._dealTheCards();
+    this._flyTheCardsIn();
 
     const onCardClickHandler = (card: Card) => {
       // to prevent clicking on the same card
@@ -157,18 +157,44 @@ class CardsGrid {
     };
   }
 
-  private _dealTheCards() {
+  private _flyTheCardsIn() {
     this._cards.forEach((card, index) => {
       card.cardCurrentSide.setPosition(
         -(this._cardWidth + this._gap),
         -(this._cardHeight + this._gap)
       );
 
-      this._startDealTheCardsTween(card, ++index);
+      this._startFlyTheCardsInTween(card, ++index);
     });
   }
 
-  private _startDealTheCardsTween(card: Card, index: number) {
+  private _flyTheCardsOut(cb: () => void) {
+    let cardsCount = 0;
+    const onComplete = () => {
+      cardsCount++;
+
+      if (cardsCount >= this._cards.length) {
+        cb();
+      }
+    };
+
+    this._cards
+      .slice()
+      .reverse()
+      .forEach((card, index) => {
+        this._scene.tweens.add({
+          targets: card.cardCurrentSide,
+          x: this._scene.sys.canvas.width + this._cardWidth + this._gap,
+          y: this._scene.sys.canvas.width + this._cardHeight + this._gap,
+          ease: "Linear",
+          duration: 200,
+          delay: index * 100,
+          onComplete,
+        });
+      });
+  }
+
+  private _startFlyTheCardsInTween(card: Card, index: number) {
     this._scene.tweens.add({
       targets: card.cardCurrentSide,
       x: card.position.x,
@@ -183,7 +209,7 @@ class CardsGrid {
     this._cardFaces = this._getShuffledCards(this._cardFaces);
     const cardFacesCopy = this._cardFaces.map((card) => card);
 
-    this._dealTheCards();
+    this._flyTheCardsOut(this._flyTheCardsIn.bind(this));
 
     this._prevCard = null;
     this._prevCardValue = null;
