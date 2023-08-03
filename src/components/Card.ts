@@ -20,6 +20,10 @@ class Card {
 
   private _isOpened: boolean;
   private _cardCurrentSide: GameObjects.Sprite;
+  private _position: {
+    x: number;
+    y: number;
+  };
 
   constructor({
     id,
@@ -33,6 +37,11 @@ class Card {
     this._id = id;
     this._value = value;
     this._isOpened = false;
+
+    this._position = {
+      x: positionX,
+      y: positionY,
+    };
 
     this._scene = scene;
 
@@ -61,16 +70,24 @@ class Card {
     }
   }
 
+  public get cardCurrentSide() {
+    return this._cardCurrentSide;
+  }
+
+  public get position() {
+    return this._position;
+  }
+
+  public get value() {
+    return this._value;
+  }
+
   public set value(value: string) {
     this._value = value;
   }
 
   public get id() {
     return this._id;
-  }
-
-  public get value() {
-    return this._value;
   }
 
   public get isOpen() {

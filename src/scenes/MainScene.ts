@@ -70,7 +70,7 @@ class MainScene extends Scene {
 
           this._sounds.timeout.play();
 
-          cardsGrid._rebuildGrid();
+          cardsGrid.rebuildGrid();
         }
       },
       loop: true,

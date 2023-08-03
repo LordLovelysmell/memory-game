@@ -113,6 +113,8 @@ class CardsGrid {
       }
     }
 
+    this._dealTheCards();
+
     const onCardClickHandler = (card: Card) => {
       // to prevent clicking on the same card
       if (this._prevCard && this._prevCard.id === card.id) {
@@ -150,14 +152,38 @@ class CardsGrid {
         if (this._onAllPairsFound) {
           this._onAllPairsFound();
         }
-        this._rebuildGrid();
+        this.rebuildGrid();
       }
     };
   }
 
-  public _rebuildGrid() {
+  private _dealTheCards() {
+    this._cards.forEach((card, index) => {
+      card.cardCurrentSide.setPosition(
+        -(this._cardWidth + this._gap),
+        -(this._cardHeight + this._gap)
+      );
+
+      this._startDealTheCardsTween(card, ++index);
+    });
+  }
+
+  private _startDealTheCardsTween(card: Card, index: number) {
+    this._scene.tweens.add({
+      targets: card.cardCurrentSide,
+      x: card.position.x,
+      y: card.position.y,
+      ease: "Linear",
+      duration: 200,
+      delay: index * 100,
+    });
+  }
+
+  public rebuildGrid() {
     this._cardFaces = this._getShuffledCards(this._cardFaces);
     const cardFacesCopy = this._cardFaces.map((card) => card);
+
+    this._dealTheCards();
 
     this._prevCard = null;
     this._prevCardValue = null;
