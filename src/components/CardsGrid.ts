@@ -159,6 +159,10 @@ class CardsGrid {
 
   private _flyTheCardsIn() {
     this._cards.forEach((card, index) => {
+      if (card.isOpen) {
+        card.close();
+      }
+
       card.cardCurrentSide.setPosition(
         -(this._cardWidth + this._gap),
         -(this._cardHeight + this._gap)
@@ -217,7 +221,7 @@ class CardsGrid {
     this._cards.forEach((card) => {
       card.setInteractive = true;
       if (card.isOpen) {
-        card.close();
+        // card.close();
       }
 
       const lastCard = cardFacesCopy.pop();
